@@ -9,15 +9,15 @@ if(! class_exists('ACO_Activator')){
         public static $_instance = null;
 
         public function __construct(){
-            add_action( 'admin_init', array( 'AWR_Activator', 'awr_safe_welcome_redirect' ) );
+            add_action( 'admin_init', array( 'ACO_Activator', 'aco_safe_welcome_redirect' ) );
         }
 
-        public function awr_safe_welcome_redirect(){
+        public function aco_safe_welcome_redirect(){
 
-			if ( ! get_transient( 'welcome_redirect_awr' ) ) {
+			if ( ! get_transient( 'welcome_redirect_aco' ) ) {
                 return;
             }
-            delete_transient( 'welcome_redirect_awr' );
+            delete_transient( 'welcome_redirect_aco' );
             if ( is_network_admin() || isset( $_GET['activate-multi'] ) ) {
                 return;
             }
@@ -32,11 +32,11 @@ if(! class_exists('ACO_Activator')){
 
         public static function activate_plugin() {
 
-            set_transient( 'welcome_redirect_awr', true, 60 );
+            set_transient( 'welcome_redirect_aco', true, 60 );
 			
-            $awr_textdomain = get_option( ACO_TEXTDOMAIN );
+            $aco_textdomain = get_option( ACO_TEXTDOMAIN );
             
-			if( ! $awr_textdomain ){
+			if( ! $aco_textdomain ){
                 update_option( ACO_TEXTDOMAIN, time() );
             }
             

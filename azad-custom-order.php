@@ -50,7 +50,7 @@ if(! class_exists('Azad_Custom_Order')){
                 return $actions;
             }
 
-            $actions['awr_settings'] = '<a href="' . esc_url( admin_url( 'tools.php?page=' . $this->slug ) ) . '" aria-label="settings"> ' . __( 'Settings', AWR_TEXTDOMAIN ) . '</a>';
+            $actions['awr_settings'] = '<a href="' . esc_url( admin_url( 'tools.php?page=' . $this->slug ) ) . '" aria-label="settings"> ' . __( 'Settings', ACO_TEXTDOMAIN ) . '</a>';
 
             return $actions;
 
@@ -62,8 +62,8 @@ if(! class_exists('Azad_Custom_Order')){
 
             if( current_user_can( 'activate_plugins' ) && function_exists( 'add_management_page' ) ){
                 $hook = add_management_page(
-                    esc_html__( 'Reset', AWR_TEXTDOMAIN ),
-                    esc_html__( 'Reset', AWR_TEXTDOMAIN ),
+                    esc_html__( 'Azad Custom Order', ACO_TEXTDOMAIN ),
+                    esc_html__( 'Azad Custom Order', ACO_TEXTDOMAIN ),
                     'activate_plugins',
                     $this->slug,
                     array( $this, 'admin_page' )
