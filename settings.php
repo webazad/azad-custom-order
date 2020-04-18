@@ -1,9 +1,9 @@
 <?php
-$scporder_options = get_option( 'scporder_options' );
-$scporder_objects = isset( $scporder_options['objects'] ) ? $scporder_options['objects'] : array();
-$scporder_tags = isset( $scporder_options['tags'] ) ? $scporder_options['tags'] : array();
+$aco_options = get_option( 'aco_options' );
+$aco_objects = isset( $aco_options['objects'] ) ? $aco_options['objects'] : array();
+$aco_tags = isset( $aco_options['tags'] ) ? $aco_options['tags'] : array();
 
-$advanced_view = isset( $scporder_options['show_advanced_view']) ? $scporder_options['show_advanced_view'] : '';
+$advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show_advanced_view'] : '';
 ?>
 <style>
 .aco-toggle {
