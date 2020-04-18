@@ -50,18 +50,20 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
                 return $actions;
             }
 
-            $actions['awr_settings'] = '<a href="' . esc_url( admin_url( 'tools.php?page=' . $this->slug ) ) . '" aria-label="settings"> ' . __( 'Settings', ACO_TEXTDOMAIN ) . '</a>';
+            $actions['aco_settings'] = '<a href="' . esc_url( admin_url( 'options-general.php?page=' . $this->slug ) ) . '" aria-label="settings"> ' . __( 'Settings', ACO_TEXTDOMAIN ) . '</a>';
 
             return $actions;
 
         }
 
-        public function i18n(){}
+        public function i18n(){
+            load_plugin_textdomain( $this->slug, false, basename( dirname( __FILE__ ) ) . '/languages/' );
+        }
 
         public function add_settings_page(){
 
-            if( current_user_can( 'activate_plugins' ) && function_exists( 'add_management_page' ) ){
-                $hook = add_management_page(
+            if( current_user_can( 'activate_plugins' ) && function_exists( 'add_options_page' ) ){
+                $hook = add_options_page(
                     esc_html__( 'Azad Custom Order', ACO_TEXTDOMAIN ),
                     esc_html__( 'Azad Custom Order', ACO_TEXTDOMAIN ),
                     'activate_plugins',
@@ -72,13 +74,9 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
 
         }
 
-        public function admin_settings_page(){            
-        ?>
-            <div class="wrap">
-                <div id="icon-tools" class="icon32"><br/></div>
-                <h1><?php esc_html_e( get_admin_page_title() ); ?></h1>
-            </div>
-        <?php }
+        public function admin_settings_page(){  
+            require ACO_PATH . 'settings.php'; 
+        }
 
         public static function _get_instance(){
 
