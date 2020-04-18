@@ -25,7 +25,7 @@ define( 'ACO_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ACO_URL', plugin_dir_url( __FILE__ ) );
 define( 'ACO_BASENAME', plugin_basename( __FILE__ ) );
 
-if(! class_exists('Azad_Custom_Order')){
+if( ! class_exists( 'Azad_Custom_Order' ) ) {
 
     final class Azad_Custom_Order{
 
@@ -34,7 +34,7 @@ if(! class_exists('Azad_Custom_Order')){
 
         public function __construct(){
 
-            add_action( 'admin_menu', array( $this, 'add_reset_page' ) );
+            add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
             add_action( 'admin_init', array( $this, 'admin_init' ) );
             add_filter( 'plugin_action_links', array( $this, 'plugin_settings_link' ), 10, 2 );
             add_action( 'plugins_loaded', array( $this, 'i18n' ), 2 );
@@ -58,7 +58,7 @@ if(! class_exists('Azad_Custom_Order')){
 
         public function i18n(){}
 
-        public function add_reset_page(){
+        public function add_settings_page(){
 
             if( current_user_can( 'activate_plugins' ) && function_exists( 'add_management_page' ) ){
                 $hook = add_management_page(
@@ -66,13 +66,13 @@ if(! class_exists('Azad_Custom_Order')){
                     esc_html__( 'Azad Custom Order', ACO_TEXTDOMAIN ),
                     'activate_plugins',
                     $this->slug,
-                    array( $this, 'admin_page' )
+                    array( $this, 'admin_settings_page' )
                 );
             }
 
         }
 
-        public function admin_page(){            
+        public function admin_settings_page(){            
         ?>
             <div class="wrap">
                 <div id="icon-tools" class="icon32"><br/></div>
