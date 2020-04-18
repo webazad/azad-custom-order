@@ -115,9 +115,9 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
 
     <form method="post">
 
-        <?php if ( function_exists( 'wp_nonce_field' ) ) wp_nonce_field( 'nonce_scporder' ); ?>
+        <?php if ( function_exists( 'wp_nonce_field' ) ) wp_nonce_field( 'aco_nonce' ); ?>
 
-        <div id="scporder_select_objects">
+        <div id="aco_select_objects">
 
             <table class="form-table">
                 <tbody>
@@ -126,7 +126,7 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
                         <td>
                             <label>
                                 <div class="aco-toggle">
-                                    <input id="scporder_allcheck_objects" class="aco-toggle__input" type="checkbox">
+                                    <input id="aco_allcheck_objects" class="aco-toggle__input" type="checkbox">
                                     <div class="aco-toggle__items">
                                         <span class="aco-toggle__track"></span>
                                         <span class="aco-toggle__thumb"></span>
@@ -142,10 +142,10 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
                                 </div>
                                 &nbsp;<?php _e( 'Check All', ACO_TEXTDOMAIN ) ?></label><br>
                             <?php
-                            $post_types_args = apply_filters( 'scpo_post_types_args', array(
+                            $post_types_args = apply_filters( 'aco_post_types_args', array(
                                 'show_ui'      => true,
                                 'show_in_menu' => true,
-                            ), $scporder_options );
+                            ), $aco_options );
 
                             $post_types = get_post_types( $post_types_args, 'objects' );
 
@@ -157,8 +157,8 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
                                     <div class="aco-toggle">
                                         <input class="aco-toggle__input" type="checkbox"
                                                name="objects[]" value="<?php echo $post_type->name; ?>" <?php
-                                        if ( isset( $scporder_objects ) && is_array( $scporder_objects ) ) {
-	                                        if ( in_array( $post_type->name, $scporder_objects ) ) {
+                                        if ( isset( $aco_objects ) && is_array( $aco_objects ) ) {
+	                                        if ( in_array( $post_type->name, $aco_objects ) ) {
 		                                        echo 'checked="checked"';
 	                                        }
                                         }
@@ -186,7 +186,7 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
             </table>
         </div>
 
-        <div id="scporder_select_tags">
+        <div id="aco_select_tags">
             <table class="form-table">
                 <tbody>
                     <tr valign="top">
@@ -194,7 +194,7 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
                         <td>
                             <label>
                                 <div class="aco-toggle">
-                                    <input id="scporder_allcheck_tags" class="aco-toggle__input" type="checkbox">
+                                    <input id="aco_allcheck_tags" class="aco-toggle__input" type="checkbox">
                                     <div class="aco-toggle__items">
                                         <span class="aco-toggle__track"></span>
                                         <span class="aco-toggle__thumb"></span>
@@ -222,8 +222,8 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
                                     <div class="aco-toggle">
                                         <input class="aco-toggle__input" type="checkbox"
                                                name="tags[]" value="<?php echo $taxonomy->name; ?>" <?php
-                                        if ( isset( $scporder_tags ) && is_array( $scporder_tags ) ) {
-	                                        if ( in_array( $taxonomy->name, $scporder_tags ) ) {
+                                        if ( isset( $aco_tags ) && is_array( $aco_tags ) ) {
+	                                        if ( in_array( $taxonomy->name, $aco_tags ) ) {
 		                                        echo 'checked="checked"';
 	                                        }
                                         }
@@ -286,7 +286,7 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
             </table>
         </div>
         <p class="submit">
-            <input type="submit" class="button-primary" name="scporder_submit" value="<?php _e( 'Update',  ACO_TEXTDOMAIN ); ?>">
+            <input type="submit" class="button-primary" name="aco_submit" value="<?php _e( 'Update',  ACO_TEXTDOMAIN ); ?>">
         </p>
 
     </form>
@@ -340,18 +340,18 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
 <script>
     (function ($) {
 
-        $("#scporder_allcheck_objects").on('click', function () {
-            var items = $("#scporder_select_objects input");
-            if ($(this).is(':checked'))
-                $(items).prop('checked', true);
+        $( "#aco_allcheck_objects" ).on( 'click', function () {
+            var items = $( "#aco_select_objects input");
+            if ( $(this).is( ':checked' ) )
+                $( items ).prop( 'checked', true );
             else
-                $(items).prop('checked', false);
+                $( items ).prop( 'checked', false );
         });
 
-        $("#scporder_allcheck_tags").on('click', function () {
-            var items = $("#scporder_select_tags input");
-            if ($(this).is(':checked'))
-                $(items).prop('checked', true);
+        $( "#aco_allcheck_tags" ).on( 'click', function () {
+            var items = $( "#aco_select_tags input" );
+            if ( $( this ).is( ':checked' ) )
+                $( items ).prop( 'checked', true );
             else
                 $(items).prop('checked', false);
         });
@@ -361,23 +361,23 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
 
             e.preventDefault();
             var btn = $(this),
-                item_input = $(this).parents('.scpo-reset-order').find('input:checked'),
+                item_input = $(this).parents( '.scpo-reset-order' ).find( 'input:checked' ),
                 items = [],
                 data = {
                     action: 'scpo_reset_order',
-                    scpo_security: '<?php echo wp_create_nonce("scpo-reset-order"); ?>'
+                    scpo_security: '<?php echo wp_create_nonce( "scpo-reset-order" ); ?>'
                 };
 
-            if (item_input.length > 0) {
-                item_input.each(function (i, item) {
-                    items.push(item.name);
+            if ( item_input.length > 0 ) {
+                item_input.each(function ( i, item ) {
+                    items.push( item.name );
                 });
 
                 data['items'] = items;
 
-                $.post("<?php echo admin_url('admin-ajax.php');  ?>", data, function (response) {
+                $.post("<?php echo admin_url( 'admin-ajax.php' );  ?>", data, function ( response ) {
                     if (response) {
-                        btn.next('.scpo-reset-response').text(response);
+                        btn.next( '.scpo-reset-response' ).text( response );
                     }
                 });
             }
