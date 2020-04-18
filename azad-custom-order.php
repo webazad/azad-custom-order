@@ -72,13 +72,9 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
 
         }
 
-        public function admin_settings_page(){            
-        ?>
-            <div class="wrap">
-                <div id="icon-tools" class="icon32"><br/></div>
-                <h1><?php esc_html_e( get_admin_page_title() ); ?></h1>
-            </div>
-        <?php }
+        public function admin_settings_page(){  
+            require ACO_PATH . 'settings.php'; 
+        }
 
         public static function _get_instance(){
 
