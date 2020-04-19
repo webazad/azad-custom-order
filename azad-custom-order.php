@@ -538,5 +538,32 @@ function aco_doing_ajax(){
 
 }
 
-// $azad = get_option('azad');
-// print_r($azad);
+/**
+ * SCP Order Uninstall hook
+ */
+register_uninstall_hook( __FILE__, 'aco_uninstall' );
+
+function aco_uninstall() {
+    global $wpdb;
+    if ( function_exists( 'is_multisite' ) && is_multisite() ) {
+        $curr_blog = $wpdb->blogid;
+        $blogids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
+        foreach ( $blogids as $blog_id ) {
+            switch_to_blog( $blog_id );
+            aco_uninstall_db();
+        }
+        switch_to_blog( $curr_blog );
+    } else {
+        aco_uninstall_db();
+    }
+}
+
+function aco_uninstall_db() {
+    global $wpdb;
+    $result = $wpdb->query( "DESCRIBE $wpdb->terms `term_order`" );
+    if ( $result ) {
+        $query = "ALTER TABLE $wpdb->terms DROP `term_order`";
+        $result = $wpdb->query( $query );
+    }
+    delete_option( 'aco_install' );
+}
