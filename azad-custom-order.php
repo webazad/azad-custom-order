@@ -50,7 +50,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
 
             // sortable ajax action
             add_action( 'wp_ajax_update-menu-order', array( $this, 'update_menu_order' ) );
-            add_action( 'wp_ajax_update-menu-order-tags', array( $this, 'update_menu_order_tags' ) );
+            //add_action( 'wp_ajax_update-menu-order-tags', array( $this, 'update_menu_order_tags' ) );
 
             // add_action( 'wp_ajax_update-menu-order-users', array( $this, 'update_menu_order_users' ) );
 			// add_action( 'wp_ajax_update-menu-order-extras', array( $this, 'update_menu_order_extras' ) );
@@ -93,24 +93,24 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
                 
                 // foreach ( $objects as $object ) {
                 //     $result = $wpdb->get_results("
-                //         SELECT count(*) as cnt, max(menu_order) as max, min(menu_order) as min
+                //         SELECT count(*) as cnt, max( menu_order ) as max, min( menu_order ) as min
                 //         FROM $wpdb->posts
-                //         WHERE post_type = '" . $object . "' AND post_status IN ('publish', 'pending', 'draft', 'private', 'future')
-                //     ");
+                //         WHERE post_type = '" . $object . "' AND post_status IN ( 'publish', 'pending', 'draft', 'private', 'future' )
+                //     " );
 
-                //     if ($result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max)
+                //     if ( $result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max )
                 //         continue;
 
                 //     // Here's the optimization
-                //     $wpdb->query("SET @row_number = 0;");
-                //     $wpdb->query("UPDATE $wpdb->posts as pt JOIN (
+                //     $wpdb->query( "SET @row_number = 0;" );
+                //     $wpdb->query( "UPDATE $wpdb->posts as pt JOIN (
                 //     SELECT ID, (@row_number:=@row_number + 1) AS `rank`
                 //     FROM $wpdb->posts
                 //     WHERE post_type = '$object' AND post_status IN ( 'publish', 'pending', 'draft', 'private', 'future' )
                 //     ORDER BY menu_order ASC
                 //     ) as pt2
                 //     ON pt.id = pt2.id
-                //     SET pt.menu_order = pt2.`rank`;");
+                //     SET pt.menu_order = pt2.`rank`;" );
 
                 // }
             }
@@ -182,7 +182,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
         }
 
         public function load_script_css() {
-            if ($this->_check_load_script_css()) {
+            if ( $this->_check_load_script_css() ) {
                 wp_enqueue_script( 'jquery' );
                 wp_enqueue_script( 'jquery-ui-sortable' );
                 wp_enqueue_script( 'aco', ACO_URL . '/assets/aco.js', array( 'jquery' ), ACO_VERSION, true);
@@ -211,57 +211,55 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
     
             if ( ! empty( $objects ) ) {
                 foreach ( $objects as $object ) {
-                    $result = $wpdb->get_results("
-                        SELECT count(*) as cnt, max(menu_order) as max, min(menu_order) as min
+                    $result = $wpdb->get_results( "
+                        SELECT count(*) as cnt, max( menu_order ) as max, min( menu_order ) as min
                         FROM $wpdb->posts
-                        WHERE post_type = '" . $object . "' AND post_status IN ('publish', 'pending', 'draft', 'private', 'future')
+                        WHERE post_type = '" . $object . "' AND post_status IN ( 'publish', 'pending', 'draft', 'private', 'future' )
                     ");
-                    echo 'Beginning';
                     if ( $result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max )
                         continue;
-                        echo 'end';
     
-            //         if ($object == 'page') {
-            //             $results = $wpdb->get_results("
-            //                 SELECT ID
-            //                 FROM $wpdb->posts
-            //                 WHERE post_type = '" . $object . "' AND post_status IN ('publish', 'pending', 'draft', 'private', 'future')
-            //                 ORDER BY post_title ASC
-            //             ");
-            //         } else {
-            //             $results = $wpdb->get_results("
-            //                 SELECT ID
-            //                 FROM $wpdb->posts
-            //                 WHERE post_type = '" . $object . "' AND post_status IN ('publish', 'pending', 'draft', 'private', 'future')
-            //                 ORDER BY post_date DESC
-            //             ");
-            //         }
-            //         foreach ($results as $key => $result) {
-            //             $wpdb->update($wpdb->posts, array('menu_order' => $key + 1), array('ID' => $result->ID));
-            //         }
+                    if ( $object == 'page' ) {
+                        $results = $wpdb->get_results( "
+                            SELECT ID
+                            FROM $wpdb->posts
+                            WHERE post_type = '" . $object . "' AND post_status IN ( 'publish', 'pending', 'draft', 'private', 'future' )
+                            ORDER BY post_title ASC
+                        " );
+                    } else {
+                        $results = $wpdb->get_results( "
+                            SELECT ID
+                            FROM $wpdb->posts
+                            WHERE post_type = '" . $object . "' AND post_status IN ('publish', 'pending', 'draft', 'private', 'future' )
+                            ORDER BY post_date DESC
+                        " );
+                    }
+                    foreach ( $results as $key => $result ) {
+                        $wpdb->update( $wpdb->posts, array( 'menu_order' => $key + 1), array( 'ID' => $result->ID ) );
+                    }
                 }
             }
     
-            // if (!empty($tags)) {
-            //     foreach ($tags as $taxonomy) {
+            // if ( ! empty( $tags ) ) {
+            //     foreach ( $tags as $taxonomy ) {
             //         $result = $wpdb->get_results("
-            //             SELECT count(*) as cnt, max(term_order) as max, min(term_order) as min
+            //             SELECT count(*) as cnt, max( term_order ) as max, min( term_order ) as min
             //             FROM $wpdb->terms AS terms
             //             INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
             //             WHERE term_taxonomy.taxonomy = '" . $taxonomy . "'
             //         ");
-            //         if ($result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max)
+            //         if ( $result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max )
             //             continue;
     
-            //         $results = $wpdb->get_results("
+            //         $results = $wpdb->get_results( "
             //             SELECT terms.term_id
             //             FROM $wpdb->terms AS terms
             //             INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
             //             WHERE term_taxonomy.taxonomy = '" . $taxonomy . "'
             //             ORDER BY name ASC
-            //         ");
-            //         foreach ($results as $key => $result) {
-            //             $wpdb->update($wpdb->terms, array('term_order' => $key + 1), array('term_id' => $result->term_id));
+            //         " );
+            //         foreach ( $results as $key => $result ) {
+            //             $wpdb->update( $wpdb->terms, array( 'term_order' => $key + 1 ), array( 'term_id' => $result->term_id ) );
             //         }
             //     }
             // }
@@ -321,12 +319,12 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             <div class="notice scpo-notice" id="scpo-notice">
                 <img src="<?php echo esc_url( plugins_url( 'assets/logo.jpg', __FILE__ ) ); ?>" width="80">
     
-                <h1><?php esc_html_e( 'Simple Custom Post Order', 'simple-custom-post-order' ); ?></h1>
+                <h1><?php esc_html_e( 'Azad Custom Order', ACO_TEXTDOMAIN ); ?></h1>
     
-                <p><?php esc_html_e( 'Thank you for installing our awesome plugin, in order to enable it you need to go to the settings page and select which custom post or taxonomy you want to order.', 'simple-custom-post-order' ); ?></p>
+                <p><?php esc_html_e( 'Thank you for installing our awesome plugin, in order to enable it you need to go to the settings page and select which custom post or taxonomy you want to order.', ACO_TEXTDOMAIN ); ?></p>
     
-                <p><a href="<?php echo admin_url( 'options-general.php?page=scporder-settings' ) ?>" class="button button-primary button-hero"><?php esc_html_e( 'Get started !', 'simple-custom-post-order' ); ?></a></p>
-                <button type="button" class="notice-dismiss"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', 'simple-custom-post-order' ); ?></span></button>
+                <p><a href="<?php echo admin_url( 'options-general.php?page=scporder-settings' ) ?>" class="button button-primary button-hero"><?php esc_html_e( 'Get started !', ACO_TEXTDOMAIN ); ?></a></p>
+                <button type="button" class="notice-dismiss"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this notice.', ACO_TEXTDOMAIN ); ?></span></button>
             </div>
     
             <style>
@@ -350,7 +348,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
                         }
     
                         jQuery.ajax({
-                            url: "<?php echo admin_url('admin-ajax.php'); ?>",
+                            url: "<?php echo admin_url( 'admin-ajax.php' ); ?>",
                             method: "POST",
                             data: ajaxData,
                             dataType: "html"
@@ -513,7 +511,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
     }
 }
 
-if( ! function_exists('load_azad_custom_order')){
+if( ! function_exists( 'load_azad_custom_order' ) ){
     function load_azad_custom_order(){
         return Azad_Custom_Order::_get_instance();
     }
