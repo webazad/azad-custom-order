@@ -49,14 +49,14 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             add_action( 'admin_init', array( $this, 'load_script_css' ) );
 
             // sortable ajax action
-            add_action( 'wp_ajax_update-menu-order', array( $this, 'update_menu_order' ) );
-            //add_action( 'wp_ajax_update-menu-order-tags', array( $this, 'update_menu_order_tags' ) );
+            // add_action( 'wp_ajax_update-menu-order', array( $this, 'update_menu_order' ) );
+            add_action( 'wp_ajax_update-menu-order-tags', array( $this, 'update_menu_order_tags' ) );
 
             // add_action( 'wp_ajax_update-menu-order-users', array( $this, 'update_menu_order_users' ) );
 			// add_action( 'wp_ajax_update-menu-order-extras', array( $this, 'update_menu_order_extras' ) );
 
             // reorder post types
-            add_action( 'pre_get_posts', array( $this, 'aco_pre_get_posts' ) );
+            // add_action( 'pre_get_posts', array( $this, 'aco_pre_get_posts' ) );
             
             // add_filter( 'get_previous_post_where', array( $this, 'scporder_previous_post_where' ) );
             // add_filter( 'get_previous_post_sort', array( $this, 'scporder_previous_post_sort' ) );
@@ -64,9 +64,9 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             // add_filter( 'get_next_post_sort', array( $this, 'scporder_next_post_sort' ) );
             
             // reorder taxonomies
-            // add_filter( 'get_terms_orderby', array( $this, 'scporder_get_terms_orderby' ), 10, 3 );
-            // add_filter( 'wp_get_object_terms', array( $this, 'scporder_get_object_terms' ), 10, 3 );
-            // add_filter( 'get_terms', array( $this, 'scporder_get_object_terms' ), 10, 3 );
+            add_filter( 'get_terms_orderby', array( $this, 'aco_get_terms_orderby' ), 10, 3 );
+            add_filter( 'wp_get_object_terms', array( $this, 'aco_get_object_terms' ), 10, 3 );
+            add_filter( 'get_terms', array( $this, 'aco_get_object_terms' ), 10, 3 );
             
             // reorder users
             // add_filter( 'pre_user_query', array( $this, 'aco_pre_user_query' ) );
@@ -121,7 +121,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             global $wpdb;
     
             parse_str( $_POST['order'], $data );
-            
+
             if ( ! is_array( $data ) )
             return false;
             
@@ -460,8 +460,35 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             }
         }
 
-        public function scporder_get_object_terms( $terms ) {
-            $tags = $this->get_scporder_options_tags();
+        public function aco_get_terms_orderby( $orderby, $args ) {
+            if ( is_admin() )
+                return $orderby;
+
+            $tags = $this->get_aco_options_tags();
+
+            if ( ! isset( $args['taxonomy'] ) )
+                return $orderby;
+
+            if( is_array( $args['taxonomy'] ) ){
+                if( isset( $args['taxonomy'][0] ) ){
+                    $taxonomy = $args['taxonomy'][0];
+                } else {
+                    $taxonomy = false;
+                }
+
+            } else {
+                $taxonomy = $args['taxonomy'];
+            }
+
+            if ( ! in_array( $taxonomy, $tags ) )
+                return $orderby;
+
+            $orderby = 't.term_order';
+            return $orderby;
+        }
+
+        public function aco_get_object_terms( $terms ) {
+            $tags = $this->get_aco_options_tags();
     
             if ( is_admin() && isset( $_GET['orderby'] ) )
                 return $terms;
