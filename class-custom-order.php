@@ -2,7 +2,7 @@
 // Exit if accessed directly
 defined( 'ABSPATH' ) || exit;
 
-if(! class_exists('ACO_Activator')){
+if( ! class_exists( 'ACO_Activator' )){
 
     class ACO_Activator{
 

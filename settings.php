@@ -97,12 +97,15 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
     display: inline-block;
 }
 
-.scpo-reset-response {
+.aco-reset-response {
     margin-left:15px;
     color:#0085ba;
 }
 </style>
+
+<!-- WRAP BEGINS -->
 <div class="wrap">
+
     <div id="icon-tools" class="icon32"><br/></div>
     <h1><?php esc_html_e( get_admin_page_title(), ACO_TEXTDOMAIN ); ?></h1>
     <?php if ( isset( $_GET['msg'] ) ) : ?>
@@ -114,11 +117,8 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
     <?php endif; ?>
 
     <form method="post">
-
         <?php if ( function_exists( 'wp_nonce_field' ) ) wp_nonce_field( 'aco_nonce' ); ?>
-
         <div id="aco_select_objects">
-
             <table class="form-table">
                 <tbody>
                     <tr valign="top">
@@ -286,9 +286,9 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
         <p class="submit">
             <input type="submit" class="button-primary" name="aco_submit" value="<?php _e( 'Update',  ACO_TEXTDOMAIN ); ?>">
         </p>
-
     </form>
-    <div class="scpo-reset-order">
+
+    <div class="aco-reset-order">
         <h1>Want to reset the order of the posts?</h1>
         <div id="scpo_reset_select_objects">
             <table class="form-table">
@@ -329,11 +329,12 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
 
         </div>
         <div>
-            <a id="reset-scp-order" class="button button-primary" href="#">Reset order</a>
-            <span class="scpo-reset-response"></span>
+            <a id="reset-aco-order" class="button button-primary" href="#">Reset order</a>
+            <span class="aco-reset-response"></span>
         </div>
     </div>
-</div>
+
+</div><!-- ends wrap -->
 
 <script>
     (function ($) {
@@ -355,15 +356,15 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
         });
 
         // Reset order function
-        $( '#reset-scp-order' ).click(function ( e ) {
+        $( '#reset-aco-order' ).click(function ( e ) {
 
             e.preventDefault();
             var btn = $(this),
-                item_input = $(this).parents( '.scpo-reset-order' ).find( 'input:checked' ),
+                item_input = $(this).parents( '.aco-reset-order' ).find( 'input:checked' ),
                 items = [],
                 data = {
-                    action: 'scpo_reset_order',
-                    scpo_security: '<?php echo wp_create_nonce( "scpo-reset-order" ); ?>'
+                    action: 'aco_reset_order',
+                    aco_security: '<?php echo wp_create_nonce( "aco-reset-order" ); ?>'
                 };
 
             if ( item_input.length > 0 ) {
@@ -375,7 +376,7 @@ $advanced_view = isset( $aco_options['show_advanced_view']) ? $aco_options['show
 
                 $.post("<?php echo admin_url( 'admin-ajax.php' );  ?>", data, function ( response ) {
                     if (response) {
-                        btn.next( '.scpo-reset-response' ).text( response );
+                        btn.next( '.aco-reset-response' ).text( response );
                     }
                 });
             }

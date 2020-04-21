@@ -42,21 +42,21 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
                 $this->aco_install();
                 
             add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
-            // add_action( 'admin_init', array( $this, 'aco_refresh' ) );
-            // add_filter( 'aco_post_types_args', array( $this, 'scpo_filter_post_types' ), 10, 2 );
+            add_action( 'admin_init', array( $this, 'aco_refresh' ) );
+            // add_filter( 'aco_post_types_args', array( $this, 'aco_filter_post_types' ), 10, 2 );
 
             add_action( 'admin_init', array( $this, 'aco_update_options' ) );
             add_action( 'admin_init', array( $this, 'load_script_css' ) );
 
             // sortable ajax action
-            // add_action( 'wp_ajax_update-menu-order', array( $this, 'update_menu_order' ) );
+            add_action( 'wp_ajax_update-menu-order', array( $this, 'update_menu_order' ) );
             add_action( 'wp_ajax_update-menu-order-tags', array( $this, 'update_menu_order_tags' ) );
 
             // add_action( 'wp_ajax_update-menu-order-users', array( $this, 'update_menu_order_users' ) );
 			// add_action( 'wp_ajax_update-menu-order-extras', array( $this, 'update_menu_order_extras' ) );
 
             // reorder post types
-            // add_action( 'pre_get_posts', array( $this, 'aco_pre_get_posts' ) );
+            add_action( 'pre_get_posts', array( $this, 'aco_pre_get_posts' ) );
             
             // add_filter( 'get_previous_post_where', array( $this, 'scporder_previous_post_where' ) );
             // add_filter( 'get_previous_post_sort', array( $this, 'scporder_previous_post_sort' ) );
@@ -76,43 +76,82 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             // add_action( 'wp_ajax_aco_dismiss_notices', array( $this, 'aco_dismiss_notices' ) );
             
             // reset ajax action
-            // add_action( 'wp_ajax_aco_reset_order', array( $this, 'aco_ajax_reset_order' ) );
+            add_action( 'wp_ajax_aco_reset_order', array( $this, 'aco_ajax_reset_order' ) );
             
         }
 
+        public function aco_filter_post_types( $args, $options ){
+
+            if( isset( $options['show_advanced_view'] ) && '1' == $options['show_advanced_view'] ){
+                unset( $args['show_in_menu'] );
+            }
+    
+            return $args;
+        }
+
         public function aco_refresh(){
+
             if ( aco_doing_ajax() ) {
                 return;
             }
-
+            
             global $wpdb;
             $objects = $this->get_aco_options_objects();
             $tags = $this->get_aco_options_tags();
 
+            if ( ! empty( $tags ) ) {
+
+                foreach ( $tags as $taxonomy ) {
+
+                    $result = $wpdb->get_results( "
+                    SELECT count(*) as cnt, max(term_order) as max, min(term_order) as min
+                    FROM $wpdb->terms AS terms
+                    INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
+                    WHERE term_taxonomy.taxonomy = '" . $taxonomy . "'
+                    " );
+
+                    if ( $result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max )
+                    continue;
+                    
+                    $results = $wpdb->get_results( "
+                    SELECT terms.term_id
+                    FROM $wpdb->terms AS terms
+                    INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
+                    WHERE term_taxonomy.taxonomy = '" . $taxonomy . "'
+                    ORDER BY term_order ASC
+                    " );
+
+                    foreach ( $results as $key => $result ) {
+                        $wpdb->update( $wpdb->terms, array( 'term_order' => $key + 1 ), array( 'term_id' => $result->term_id ) );
+                    }
+                }
+            }
+
             if ( ! empty( $objects ) ) {
                 
-                // foreach ( $objects as $object ) {
-                //     $result = $wpdb->get_results("
-                //         SELECT count(*) as cnt, max( menu_order ) as max, min( menu_order ) as min
-                //         FROM $wpdb->posts
-                //         WHERE post_type = '" . $object . "' AND post_status IN ( 'publish', 'pending', 'draft', 'private', 'future' )
-                //     " );
+                foreach ( $objects as $object ) {
 
-                //     if ( $result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max )
-                //         continue;
+                    $result = $wpdb->get_results("
+                        SELECT count(*) as cnt, max( menu_order ) as max, min( menu_order ) as min
+                        FROM $wpdb->posts
+                        WHERE post_type = '" . $object . "' AND post_status IN ( 'publish', 'pending', 'draft', 'private', 'future' )
+                    " );
 
-                //     // Here's the optimization
-                //     $wpdb->query( "SET @row_number = 0;" );
-                //     $wpdb->query( "UPDATE $wpdb->posts as pt JOIN (
-                //     SELECT ID, (@row_number:=@row_number + 1) AS `rank`
-                //     FROM $wpdb->posts
-                //     WHERE post_type = '$object' AND post_status IN ( 'publish', 'pending', 'draft', 'private', 'future' )
-                //     ORDER BY menu_order ASC
-                //     ) as pt2
-                //     ON pt.id = pt2.id
-                //     SET pt.menu_order = pt2.`rank`;" );
+                    if ( $result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max )
+                        continue;
 
-                // }
+                    // Here's the optimization
+                    $wpdb->query( "SET @row_number = 0;" );
+                    $wpdb->query( "UPDATE $wpdb->posts as pt JOIN (
+                    SELECT ID, (@row_number:=@row_number + 1) AS `rank`
+                    FROM $wpdb->posts
+                    WHERE post_type = '$object' AND post_status IN ( 'publish', 'pending', 'draft', 'private', 'future' )
+                    ORDER BY menu_order ASC
+                    ) as pt2
+                    ON pt.id = pt2.id
+                    SET pt.menu_order = pt2.`rank`;" );
+
+                }
             }
         }
 
@@ -240,29 +279,29 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
                 }
             }
     
-            // if ( ! empty( $tags ) ) {
-            //     foreach ( $tags as $taxonomy ) {
-            //         $result = $wpdb->get_results("
-            //             SELECT count(*) as cnt, max( term_order ) as max, min( term_order ) as min
-            //             FROM $wpdb->terms AS terms
-            //             INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
-            //             WHERE term_taxonomy.taxonomy = '" . $taxonomy . "'
-            //         ");
-            //         if ( $result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max )
-            //             continue;
+            if ( ! empty( $tags ) ) {
+                foreach ( $tags as $taxonomy ) {
+                    $result = $wpdb->get_results( "
+                        SELECT count(*) as cnt, max( term_order ) as max, min( term_order ) as min
+                        FROM $wpdb->terms AS terms
+                        INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
+                        WHERE term_taxonomy.taxonomy = '" . $taxonomy . "'
+                    " );
+                    if ( $result[0]->cnt == 0 || $result[0]->cnt == $result[0]->max )
+                        continue;
     
-            //         $results = $wpdb->get_results( "
-            //             SELECT terms.term_id
-            //             FROM $wpdb->terms AS terms
-            //             INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
-            //             WHERE term_taxonomy.taxonomy = '" . $taxonomy . "'
-            //             ORDER BY name ASC
-            //         " );
-            //         foreach ( $results as $key => $result ) {
-            //             $wpdb->update( $wpdb->terms, array( 'term_order' => $key + 1 ), array( 'term_id' => $result->term_id ) );
-            //         }
-            //     }
-            // }
+                    $results = $wpdb->get_results( "
+                        SELECT terms.term_id
+                        FROM $wpdb->terms AS terms
+                        INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
+                        WHERE term_taxonomy.taxonomy = '" . $taxonomy . "'
+                        ORDER BY name ASC
+                    " );
+                    foreach ( $results as $key => $result ) {
+                        $wpdb->update( $wpdb->terms, array( 'term_order' => $key + 1 ), array( 'term_id' => $result->term_id ) );
+                    }
+                }
+            }
     
             wp_redirect( "admin.php?page=" . $this->slug . "&msg=update" );
         }
@@ -296,27 +335,39 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             load_plugin_textdomain( $this->slug, false, basename( dirname( __FILE__ ) ) . '/languages/' );
         }
 
-        public function scporder_notice_not_checked() {
+        public function aco_dismiss_notices() {
 
-            $settings = $this->get_scporder_options_objects();
+            if ( ! check_admin_referer( 'aco_dismiss_notice', 'aco_nonce' ) ) {
+                wp_die( 'nok' );
+            }
+    
+            update_option( 'aco_notice', '1' );
+    
+            wp_die( 'ok' );
+    
+        }
+
+        public function aco_notice_not_checked() {
+
+            $settings = $this->get_aco_options_objects();
             if ( ! empty( $settings ) ){
                 return;
             }
     
             $screen = get_current_screen();
     
-            if ( 'settings_page_scporder-settings' == $screen->id ) {
+            if ( 'settings_page_azad-custom-order' == $screen->id ) {
                 return;
             }
     
-            $dismessed = get_option( 'scporder_notice', false );
+            $dismessed = get_option( 'aco_notice', false );
     
             if ( $dismessed ) {
                 return;
             }
     
             ?>
-            <div class="notice scpo-notice" id="scpo-notice">
+            <div class="notice aco-notice" id="aco-notice">
                 <img src="<?php echo esc_url( plugins_url( 'assets/logo.jpg', __FILE__ ) ); ?>" width="80">
     
                 <h1><?php esc_html_e( 'Azad Custom Order', ACO_TEXTDOMAIN ); ?></h1>
@@ -328,7 +379,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             </div>
     
             <style>
-                .scpo-notice {
+                .aco-notice {
                     background: #e9eff3;
                     border: 10px solid #fff;
                     color: #608299;
@@ -339,12 +390,12 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             </style>
             <script>
                 jQuery(document).ready(function(){
-                    jQuery( '#scpo-notice .notice-dismiss' ).click(function( evt ){
+                    jQuery( '#aco-notice .aco-dismiss' ).click(function( evt ){
                         evt.preventDefault();
     
                         var ajaxData = {
-                            'action' : 'scporder_dismiss_notices',
-                            'scporder_nonce' : '<?php echo wp_create_nonce( 'scporder_dismiss_notice' ) ?>'
+                            'action' : 'aco_dismiss_notices',
+                            'aco_nonce' : '<?php echo wp_create_nonce( 'aco_dismiss_notice' ) ?>'
                         }
     
                         jQuery.ajax({
@@ -353,7 +404,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
                             data: ajaxData,
                             dataType: "html"
                         }).done(function(){
-                            jQuery("#scpo-notice").hide();
+                            jQuery("#aco-notice").hide();
                         });
     
                     });
@@ -402,6 +453,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
                     $menu_order_arr[] = $result->term_order;
                 }
             }
+
             sort( $menu_order_arr );
     
             foreach ( $data as $key => $values ) {
@@ -410,7 +462,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
                 }
             }
     
-            do_action( 'scp_update_menu_order_tags' );
+            //do_action( 'aco_update_menu_order_tags' );
         }
 
         public function aco_pre_get_posts( $wp_query ) {
@@ -525,6 +577,43 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             return $tags;
         }
 
+        /**
+         *  ACO reset order for post types/taxonomies
+         */
+        public function aco_ajax_reset_order() {
+
+            global $wpdb;
+
+            if ( 'aco_reset_order' == $_POST['action'] ) {
+                check_ajax_referer( 'aco-reset-order', 'aco_security' );
+                $items = $_POST['items'];
+
+                $count   = 0;
+                $in_list = "(";
+                foreach ( $items as $item ) {
+
+                    if ($count != 0) {
+                        $in_list .= ',';
+                    }
+                    $in_list .= '\'' . $item . '\'';
+                    $count++;
+                }
+                $in_list .= ")";
+
+                $prep_posts_query = "UPDATE $wpdb->posts SET `menu_order` = 0 WHERE `post_type` IN $in_list";
+
+                $result = $wpdb->query( $prep_posts_query );
+
+                if ( $result ) {
+                    echo 'Items have been reset';
+                } else {
+                    echo false;
+                }
+
+                wp_die();
+            }
+        }
+
         public static function _get_instance(){
 
             if( is_null( self::$_instance ) && ! isset( self::$_instance ) && ! ( self::$_instance instanceof self ) ){
@@ -548,6 +637,9 @@ if( is_admin() ){
     $GLOBALS['load_azad_custom_order'] = load_azad_custom_order();
 }
 
+/**
+ * ACO aCTIVATION hook
+ */
 require_once( ACO_PATH . 'class-custom-order.php' );
 register_activation_hook( __FILE__, array( 'ACO_Activator', 'activate_plugin' ) );
 
@@ -566,7 +658,7 @@ function aco_doing_ajax(){
 }
 
 /**
- * SCP Order Uninstall hook
+ * ACO Uninstall hook
  */
 register_uninstall_hook( __FILE__, 'aco_uninstall' );
 

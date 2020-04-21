@@ -1,4 +1,5 @@
 (function ($) {
+
     $('table.posts #the-list, table.pages #the-list').sortable({
         'items': 'tr',
         'axis': 'y',
@@ -10,6 +11,7 @@
             });
         }
     });
+    
     $('table.tags #the-list').sortable({
         'items': 'tr',
         'axis': 'y',
@@ -21,16 +23,20 @@
             });
         }
     });
+
     var fixHelper = function (e, ui) {
         ui.children().children().each(function () {
             $(this).width($(this).width());
         });
         return ui;
     };
-    /****
+
+
+    /**
      * Fix for table breaking
      */
     jQuery(window).load(function () {
+
         jQuery('#the-list').width(jQuery('#the-list').width());
 
         // make the array for the sizes
@@ -59,9 +65,5 @@
         }
 
     });
-
-    /*****
-     *  End table breaking fix
-     */
 
 })(jQuery)
