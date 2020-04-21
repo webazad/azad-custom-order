@@ -72,8 +72,8 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
             add_filter( 'pre_user_query', array( $this, 'aco_pre_user_query' ) );
             
             // notice perposes
-            // add_action( 'admin_notices', array( $this, 'aco_notice_not_checked' ) );
-            // add_action( 'wp_ajax_aco_dismiss_notices', array( $this, 'aco_dismiss_notices' ) );
+            add_action( 'admin_notices', array( $this, 'aco_notice_not_checked' ) );
+            add_action( 'wp_ajax_aco_dismiss_notices', array( $this, 'aco_dismiss_notices' ) );
             
             // reset ajax action
             // add_action( 'wp_ajax_aco_reset_order', array( $this, 'aco_ajax_reset_order' ) );
@@ -350,7 +350,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
         public function aco_notice_not_checked() {
 
             $settings = $this->get_aco_options_objects();
-            if ( ! empty( $settings ) ){
+            if (  empty( $settings ) ){
                 return;
             }
     
@@ -368,7 +368,7 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
     
             ?>
             <div class="notice aco-notice" id="aco-notice">
-                <img src="<?php echo esc_url( plugins_url( 'assets/logo.jpg', __FILE__ ) ); ?>" width="80">
+                <!--img src="<?php // echo esc_url( plugins_url( 'assets/logo.jpg', __FILE__ ) ); ?>" width="80"-->
     
                 <h1><?php esc_html_e( 'Azad Custom Order', ACO_TEXTDOMAIN ); ?></h1>
     
@@ -380,11 +380,12 @@ if( ! class_exists( 'Azad_Custom_Order' ) ) {
     
             <style>
                 .aco-notice {
-                    background: #e9eff3;
-                    border: 10px solid #fff;
-                    color: #608299;
-                    padding: 30px;
-                    text-align: center;
+                    background: #ffffff;
+                    border: 0px solid #e3e3e3;
+                    border-left: 4px solid #00a0d2;
+                    color: #000000;
+                    padding: 10px;
+                    text-align: left;
                     position: relative;
                 }
             </style>
